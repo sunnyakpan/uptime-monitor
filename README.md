@@ -5,7 +5,7 @@ A Laravel 13 API for monitoring website uptime with notifications.
 ## Requirements
 - PHP 8.4+
 - Composer
-- MySQL 8+ (or SQLite for local dev)
+- MySQL 8+
 
 ## Setup Instructions
 
@@ -24,7 +24,7 @@ Edit `.env` with your database and mail credentials.
 Key variables:
 ```env
 DB_DATABASE=uptime_monitor_db
-MAIL_MAILER=smtp          # You can Use 'log' to just log emails locally
+MAIL_MAILER=smtp          # Use 'log' to just log emails locally
 UPTIME_NOTIFICATION_EMAIL=you@example.com
 QUEUE_CONNECTION=sync     # Use 'database' for production
 ```
@@ -58,6 +58,34 @@ php artisan queue:work
 | GET | `/api/monitors/{id}/history` | Get check history |
 
 ## Running Tests
+
+Tests use a **separate MySQL test database** to avoid affecting your development data.
+
+### 1. Create the Test Database
+```bash
+mysql -u root -e "CREATE DATABASE uptime_monitor_test;"
+```
+
+### 2. Run the Test Suite
 ```bash
 php artisan test
+```
+
+The `phpunit.xml` is pre-configured to use MySQL with the `uptime_monitor_test` database, 
+with session, cache, queue, and mail drivers all set to `array` for fast isolated testing.
+
+### Expected Output
+```
+   PASS  Tests\Unit\ExampleTest
+  ✓ that true is true
+
+   PASS  Tests\Feature\MonitorApiTest
+  ✓ can create monitor
+  ✓ duplicate url is rejected
+  ✓ url is required
+  ✓ can list monitors
+  ✓ can get check history
+  ✓ history returns 404 for missing monitor
+
+  Tests:  7 passed
 ```
