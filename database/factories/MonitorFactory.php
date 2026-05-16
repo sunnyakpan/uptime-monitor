@@ -18,11 +18,11 @@ class MonitorFactory extends Factory
     public function definition(): array
     {
         return [
-            'url'            => 'https://' . $this->faker->unique()->domainName(),
-            'check_interval' => 5,
-            'threshold'      => 3,
-            'status'         => 'pending',
-            'last_checked_at' => null,
+            'url'                  => 'https://' . $this->faker->unique()->domainName(),
+            'check_interval'       => $this->faker->randomElement([1, 5, 10, 15, 30]),
+            'threshold'            => $this->faker->numberBetween(1, 5),
+            'status'               => $this->faker->randomElement(['pending', 'up', 'down']),
+            'last_checked_at'      => $this->faker->optional()->dateTimeThisMonth(),
             'consecutive_failures' => 0,
         ];
     }
