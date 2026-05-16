@@ -34,7 +34,6 @@ class MonitorCheckerService
             $statusCode = $response->getStatusCode();
             // 2xx and 3xx are considered "up"
             $isUp = $statusCode >= 200 && $statusCode < 400;
-
         } catch (ConnectException $e) {
             // Timeout or connection refused — status_code stays 0
         } catch (RequestException $e) {
@@ -79,16 +78,17 @@ class MonitorCheckerService
 
     private function handleNotifications(Monitor $monitor, string $previousStatus, string $newStatus): void
     {
+        // Load the user who owns this monitor
+        $user = $monitor->user;
+
         // Site just went DOWN
         if ($newStatus === 'down' && $previousStatus !== 'down') {
-            Notification::route('mail', config('uptime.notification_email'))
-                ->notify(new SiteDownNotification($monitor));
+            $user->notify(new SiteDownNotification($monitor));
         }
 
         // Site came back UP
         if ($newStatus === 'up' && $previousStatus === 'down') {
-            Notification::route('mail', config('uptime.notification_email'))
-                ->notify(new SiteUpNotification($monitor));
+            $user->notify(new SiteUpNotification($monitor));
         }
     }
 }

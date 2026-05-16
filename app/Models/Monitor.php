@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Monitor extends Model
@@ -11,6 +12,7 @@ class Monitor extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'url',
         'check_interval',
         'threshold',
@@ -20,20 +22,22 @@ class Monitor extends Model
     ];
 
     protected $casts = [
-        'last_checked_at' => 'datetime',
-        'check_interval'  => 'integer',
-        'threshold'       => 'integer',
+        'last_checked_at'      => 'datetime',
+        'check_interval'       => 'integer',
+        'threshold'            => 'integer',
         'consecutive_failures' => 'integer',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function checks(): HasMany
     {
         return $this->hasMany(MonitorCheck::class);
     }
 
-    /**
-     * Calculate uptime percentage from check history.
-     */
     public function getUptimePercentageAttribute(): ?float
     {
         $total = $this->checks()->count();

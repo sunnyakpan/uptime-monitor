@@ -17,7 +17,7 @@ class MonitorController extends Controller
      */
     public function store(StoreMonitorRequest $request): JsonResponse
     {
-        $monitor = Monitor::create([
+        $monitor = $request->user()->monitors()->create([
             'url'            => $request->url,
             'check_interval' => $request->input('check_interval', 5),
             'threshold'      => $request->input('threshold', 3),
@@ -33,9 +33,10 @@ class MonitorController extends Controller
     /**
      * GET /api/monitors
      */
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        $monitors = Monitor::all();
+        // Only return monitors belonging to the authenticated user
+        $monitors = $request->user()->monitors()->get();
 
         return MonitorResource::collection($monitors);
     }
@@ -45,7 +46,8 @@ class MonitorController extends Controller
      */
     public function history(Request $request, int $id): JsonResponse
     {
-        $monitor = Monitor::find($id);
+        // Scope to authenticated user's monitors only
+        $monitor = $request->user()->monitors()->find($id);
 
         if (! $monitor) {
             return response()->json(['message' => 'Monitor not found.'], 404);
