@@ -2,14 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Attributes\Description;
-use Illuminate\Console\Attributes\Signature;
-use Illuminate\Console\Command;
 use App\Jobs\CheckMonitorJob;
 use App\Models\Monitor;
+use Illuminate\Console\Command;
 
-#[Signature('app:dispatch-monitor-checks')]
-#[Description('Command description')]
 class DispatchMonitorChecks extends Command
 {
     protected $signature   = 'monitors:check';
@@ -19,14 +15,22 @@ class DispatchMonitorChecks extends Command
     {
         $now = now();
 
-        Monitor::all()->each(function (Monitor $monitor) use ($now) {
-            // Check if this monitor is due based on its interval
+        $monitors = Monitor::all();
+
+        if ($monitors->isEmpty()) {
+            $this->info('No monitors found.');
+            return;
+        }
+
+        $monitors->each(function (Monitor $monitor) use ($now) {
             $isDue = is_null($monitor->last_checked_at)
                 || $monitor->last_checked_at->addMinutes($monitor->check_interval)->lte($now);
 
             if ($isDue) {
                 CheckMonitorJob::dispatch($monitor);
                 $this->info("Dispatched check for: {$monitor->url}");
+            } else {
+                $this->info("Skipped (not due yet): {$monitor->url}");
             }
         });
     }

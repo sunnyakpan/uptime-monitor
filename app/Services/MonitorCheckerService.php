@@ -51,6 +51,8 @@ class MonitorCheckerService
             'response_time_ms' => $responseTimeMs,
             'is_up'            => $isUp,
             'checked_at'       => now(),
+            'created_at'       => now(),
+            'updated_at'       => now(),
         ]);
 
         $previousStatus = $monitor->status;
